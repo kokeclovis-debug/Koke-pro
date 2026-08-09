@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Koke Pro</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f8f4ef;color:#1a1a1a;min-height:100vh}
+    .page{display:none;min-height:100vh;padding-bottom:90px}
+    .active{display:block}
+    .auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#f8f4ef,#f0e6d8)}
+    .auth-box{background:#fff;padding:32px 26px;border-radius:24px;width:100%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,.08);text-align:center}
+    .auth-box h1{font-size:28px;margin-bottom:6px}
+    .auth-box h1 span{color:#e85d04}
+    .auth-box p{color:#666;margin-bottom:22px;font-size:14px}
+    .auth-box input{width:100%;padding:14px;margin:8px 0;border:1px solid #e5e0d8;border-radius:14px;font-size:15px;background:#fafafa}
+    .auth-box button{width:100%;padding:15px;margin-top:14px;background:linear-gradient(90deg,#e85d04,#f48c06);color:#fff;border:none;border-radius:50px;font-size:16px;font-weight:bold}
+    .tab{display:flex;margin-bottom:18px;background:#f1ece5;border-radius:12px;padding:4px}
+    .tab button{flex:1;padding:10px;border:none;background:transparent;border-radius:10px;font-size:14px;color:#666}
+    .tab button.active{background:#fff;color:#e85d04;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+    .home-header{padding:20px 20px 10px;display:flex;justify-content:space-between;align-items:center}
+    .avatar{width:42px;height:42px;background:#e85d04;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold}
+    .rate-card{margin:10px 20px 20px;background:linear-gradient(135deg,#9a3412,#c2410c);border-radius:20px;padding:18px;color:#fff}
+    .calc-card{margin:0 20px 20px;background:#fff;border-radius:20px;padding:20px;box-shadow:0 4px 15px rgba(0,0,0,.05)}
+    .amount-row{display:flex;justify-content:space-between;align-items:center;margin:12px 0}
+    .amount-row input{border:none;font-size:32px;font-weight:bold;width:140px;outline:none;background:transparent}
+    .currency-badge{background:#f1ece5;padding:6px 12px;border-radius:20px;font-size:13px}
+    .swap-btn{width:52px;height:52px;background:#e85d04;color:#fff;border:none;border-radius:50%;font-size:24px;margin:10px auto;display:block;box-shadow:0 4px 12px rgba(232,93,4,.3)}
+    .main-btn{width:calc(100% - 40px);margin:10px 20px 30px;padding:16px;background:linear-gradient(90deg,#e85d04,#f48c06);color:#fff;border:none;border-radius:50px;font-size:17px;font-weight:bold}
+    .step-header{padding:16px 20px;display:flex;align-items:center;gap:12px}
+    .back-btn{width:36px;height:36px;background:#f1ece5;border:none;border-radius:50%;font-size:18px}
+    .summary-bar{margin:0 20px 20px;background:linear-gradient(90deg,#9a3412,#c2410c);border-radius:16px;padding:14px 18px;color:#fff;display:flex;justify-content:space-between;font-weight:bold}
+    .form-card{margin:0 20px 16px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .form-card input{width:100%;padding:13px;border:1px solid #e5e0d8;border-radius:12px;font-size:15px;margin-bottom:12px}
+    .section-title{font-weight:bold;color:#e85d04;margin:14px 0 8px;font-size:15px}
+    .pay-option{border:1.5px solid #e5e0d8;border-radius:14px;padding:14px;margin-bottom:12px}
+    .ref-box{border:2px dashed #e85d04;border-radius:14px;padding:16px;text-align:center;margin:16px 0;background:#fff7ed}
+    .ref-box strong{font-size:24px;color:#e85d04}
+    .upload-box{text-align:center;border:2px dashed #e5e0d8;border-radius:16px;padding:30px 20px;margin:0 20px 16px;background:#fff;cursor:pointer}
+    .upload-box.has-file{border-color:#22c55e;background:#f0fdf4}
+    .upload-preview{max-width:100%;max-height:180px;border-radius:12px;margin-top:10px}
+    .history-card{margin:12px 20px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .status-badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;background:#fef3c7;color:#92400e}
+    .status-completed{background:#dcfce7;color:#166534}
+    .status-rejected{background:#fee2e2;color:#991b1b}
+    .details-box{margin-top:12px;padding:12px;background:#f8f4ef;border-radius:12px;font-size:14px;line-height:1.6}
+    .congrats-box{margin-top:12px;padding:12px;background:#dcfce7;border-radius:12px;color:#166534;font-size:14px}
+    .profile-card{margin:20px;background:linear-gradient(135deg,#9a3412,#c2410c);border-radius:20px;padding:20px;color:#fff;display:flex;align-items:center;gap:14px}
+    .profile-pic{width:60px;height:60px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;cursor:pointer}
+    .profile-pic img{width:100%;height:100%;object-fit:cover}
+    .menu-item{margin:10px 20px;background:#fff;border-radius:16px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:pointer}
+    .edit-box{margin:15px 20px;background:#fff;border-radius:16px;padding:18px;display:none;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .edit-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #e5e0d8;border-radius:12px}
+    .chat-box{height:320px;overflow-y:auto;background:#f8f4ef;margin:0 20px;border-radius:16px;padding:14px;border:1px solid #e5e0d8}
+    .chat-input-area{margin:12px 20px;display:flex;gap:8px;align-items:center}
+    .chat-input-area input{flex:1;padding:12px;border:1px solid #e5e0d8;border-radius:25px;font-size:14px}
+    .media-btn{width:40px;height:40px;border-radius:50%;border:none;background:#f1ece5;font-size:18px}
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;padding:10px 0 28px;border-top:1px solid #eee;z-index:100}
+    .nav-item{text-align:center;flex:1;color:#999;font-size:11px}
+    .nav-item.active{color:#e85d04}
+    .nav-item .icon{font-size:22px;display:block}
+  </style>
+</head>
+<body>
+
+  <!-- AUTH -->
+  <div id="authPage" class="page active">
+    <div class="auth-page">
+      <div class="auth-box">
+        <h1>Koke <span>Pro</span></h1>
+        <p>Badilisha maisha yako kuwa digital</p>
+        <div class="tab">
+          <button class="active" id="tabLogin" onclick="showAuthTab(0)">Login</button>
+          <button id="tabSignup" onclick="showAuthTab(1)">Sign Up</button>
+        </div>
+        <div id="loginForm">
+          <input type="tel" id="loginPhone" placeholder="Namba ya Simu">
+          <input type="password" id="loginPass" placeholder="Password">
+          <button onclick="doLogin()">Login</button>
+        </div>
+        <div id="registerForm" style="display:none">
+          <input type="text" id="regName" placeholder="Jina Kamili">
+          <input type="tel" id="regPhone" placeholder="Namba ya Simu">
+          <input type="email" id="regEmail" placeholder="Email">
+          <input type="password" id="regPass" placeholder="Password">
+          <button onclick="doRegister()">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="homePage" class="page">
+    <div class="home-header">
+      <div>
+        <div style="font-size:13px;color:#888">KOKE PRO</div>
+        <h2 id="greeting">Hi, User 👋</h2>
+      </div>
+      <div class="avatar">K</div>
+    </div>
+    <div class="rate-card">
+      <div style="font-size:12px;opacity:.9">LIVE RATE</div>
+      <div style="font-size:22px;font-weight:bold;margin-top:4px" id="liveRateText">1 MZN = 28.5 BIF</div>
+      <div style="margin-top:8px;font-size:13px" id="flagDirection">🇲🇿 → 🇧🇮</div>
+    </div>
+    <div class="calc-card">
+      <div style="font-size:12px;color:#888">YOU SEND</div>
+      <div class="amount-row">
+        <input type="number" id="fromAmount" value="1000" oninput="calculate()">
+        <div class="currency-badge" id="fromBadge">🇲🇿 MZN</div>
+      </div>
+      <button class="swap-btn" onclick="swapCurrencies()">↔</button>
+      <div style="font-size:12px;color:#888">THEY GET</div>
+      <div class="amount-row">
+        <input type="number" id="toAmount" value="28500" readonly style="color:#e85d04">
+        <div class="currency-badge" id="toBadge">🇧🇮 BIF</div>
+      </div>
+    </div>
+    <button class="main-btn" onclick="goTo('send1')">Next →</button>
+    <p style="text-align:center;font-size:12px;color:#888;margin-top:-10px">Rate updated by admin</p>
+  </div>
+
+  <!-- SEND 1 -->
+  <div id="send1Page" class="page">
+    <div class="step-header">
+      <button class="back-btn" onclick="goTo('home')">←</button>
+      <div><div style="font-size:12px;color:#888">Step 1 of 3</div><strong>Send Money</strong></div>
+    </div>
+    <div class="summary-bar">
+      <span>YOU SEND<br><span id="sumFrom">1000 MZN</span></span>
+      <span>→</span>
+      <span>THEY GET<br><span id="sumTo">28500 BIF</span></span>
+    </div>
+    <div class="form-card">
+      <div class="section-title">📱 Mobile Money / Receiver</div>
+      <input type="text" id="receiverName" placeholder="Jina la Mpokeaji (mfano: Inasuku Diane)">
+      <input type="tel" id="receiverPhone" placeholder="Namba ya Mpokeaji (mfano: 68757372)">
+      <div class="section-title">🏦 Bank Transfer Details</div>
+      <input type="text" id="bankAccountName" placeholder="Account Name">
+      <input type="text" id="bankAccountNumber" placeholder="Account Number">
+      <input type="text" id="bankName" placeholder="Bank Name">
+      <input type="text" id="bankAddress" placeholder="Address / Location">
+    </div>
+    <button class="main-btn" onclick="goTo('send2')">Next</button>
+  </div>
+
+  <!-- SEND 2 -->
+  <div id="send2Page" class="page">
+    <div class="step-header">
+      <button class="back-btn" onclick="goTo('send1')">←</button>
+      <div><div style="font-size:12px;color:#888">Step 2 of 3</div><strong>Send Money</strong></div>
+    </div>
+    <div class="summary-bar">
+      <span>YOU SEND<br>1000 MZN</span>
+      <span>→</span>
+      <span>THEY GET<br>28500 BIF</span>
+    </div>
+    <div style="padding:0 20px;margin-bottom:10px;font-weight:bold">Pay to one of these numbers</div>
+    <div class="form-card">
+      <div class="pay-option">
+        <div style="font-size:12px;color:#888">EMOLA</div>
+        <strong>+258 84 000 0000</strong><br>
+        <small>KOKE PRO Agent</small>
+      </div>
+      <div class="pay-option">
+        <div style="font-size:12px;color:#888">M-PESA</div>
+        <strong>+258 82 000 0000</strong><br>
+        <small>KOKE PRO Agent</small>
+      </div>
+      <div class="ref-box">
+        <div style="font-size:12px;color:#888">REFERENCE CODE</div>
+        <strong id="refCode">KP-2207</strong>
+        <div style="font-size:12px;color:#888;margin-top:4px">Write this code on your payment</div>
+      </div>
+    </div>
+    <button class="main-btn" onclick="goTo('send3')">Next</button>
+  </div><!-- SEND 3 -->
+  <div id="send3Page" class="page">
+    <div class="step-header">
+      <button class="back-btn" onclick="goTo('send2')">←</button>
+      <div><div style="font-size:12px;color:#888">Step 3 of 3</div><strong>Send Money</strong></div>
+    </div>
+    <div class="form-card" style="border:1px solid #fbbf24;background:#fffbeb">
+      ⚠ Submitting an edited or fake screenshot will lead to your account being closed.
+    </div>
+    <div class="upload-box" id="uploadBox" onclick="document.getElementById('screenshotInput').click()">
+      <div style="font-size:32px;color:#e85d04" id="uploadIcon">↑</div>
+      <div style="font-weight:bold;margin:8px 0" id="uploadText">Upload payment screenshot</div>
+      <div style="font-size:13px;color:#888">PNG or JPG</div>
+      <img id="uploadPreview" class="upload-preview" style="display:none;">
+      <input type="file" id="screenshotInput" accept="image/*" style="display:none" onchange="handleScreenshot(event)">
+    </div>
+    <div class="form-card">
+      <label><input type="checkbox" id="confirmCheck"> I confirm this is a real payment screenshot.</label>
+    </div>
+    <button class="main-btn" onclick="submitOrder()">Submit order</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="historyPage" class="page">
+    <div style="padding:20px">
+      <h1 style="font-size:24px">History</h1>
+      <p style="color:#888;font-size:14px">All your transactions</p>
+    </div>
+    <div id="historyList">
+      <p style="text-align:center;color:#888;margin-top:40px">Hakuna transactions bado</p>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="supportPage" class="page">
+    <div class="step-header">
+      <button class="back-btn" onclick="goTo('account')">←</button>
+      <div><strong>Support Chat</strong></div>
+    </div>
+    <div class="chat-box" id="chatBox">
+      <p style="color:#888;text-align:center">Habari! Unaweza kuuliza chochote hapa.</p>
+    </div>
+    <div class="chat-input-area">
+      <button class="media-btn" onclick="document.getElementById('chatImage').click()">📷</button>
+      <button class="media-btn" onclick="document.getElementById('chatAudio').click()">🎤</button>
+      <button class="media-btn" onclick="document.getElementById('chatDoc').click()">📄</button>
+      <input type="text" id="chatMessage" placeholder="Andika ujumbe...">
+      <button class="media-btn" style="background:#e85d04;color:#fff" onclick="sendChat()">➤</button>
+    </div>
+    <input type="file" id="chatImage" accept="image/*" style="display:none" onchange="sendMedia(this,'image')">
+    <input type="file" id="chatAudio" accept="audio/*" style="display:none" onchange="sendMedia(this,'audio')">
+    <input type="file" id="chatDoc" accept=".pdf,.doc,.docx" style="display:none" onchange="sendMedia(this,'document')">
+  </div>
+
+  <!-- ACCOUNT -->
+  <div id="accountPage" class="page">
+    <div style="padding:20px 20px 0"><h1 style="font-size:24px">Account</h1></div>
+    <div class="profile-card">
+      <div class="profile-pic" id="profilePic" onclick="document.getElementById('picInput').click()">👤</div>
+      <input type="file" id="picInput" accept="image/*" style="display:none" onchange="changePic(event)">
+      <div>
+        <div style="font-weight:bold;font-size:18px" id="accName">User Name</div>
+        <div style="font-size:13px;opacity:.9" id="accEmail">email@example.com</div>
+      </div>
+    </div>
+    <div class="edit-box" id="editBox">
+      <input type="text" id="editName" placeholder="Full Name">
+      <input type="tel" id="editPhone" placeholder="Phone">
+      <input type="email" id="editEmail" placeholder="Email">
+      <button class="main-btn" style="width:100%;margin:10px 0 0" onclick="saveProfile()">Save Changes</button>
+      <button style="width:100%;padding:12px;margin-top:8px;background:#e5e0d8;border:none;border-radius:12px" onclick="document.getElementById('editBox').style.display='none'">Cancel</button>
+    </div>
+    <div class="menu-item" onclick="openEditProfile()"><span>✏️ Edit Profile</span><span>→</span></div>
+    <div class="menu-item" onclick="changeLang()"><span>🌐 Language</span><span id="langText">English →</span></div>
+    <div class="menu-item" onclick="goTo('support')"><span>💬 Support</span><span>Live chat →</span></div>
+    <div class="menu-item" onclick="showPolicy()"><span>🔒 Privacy Policy</span><span>→</span></div>
+    <div class="menu-item" onclick="goTo('auth')" style="color:#e85d04"><span>↪ Sign out</span></div>
+    <div class="menu-item" style="color:#ef4444" onclick="if(confirm('Delete account?'))alert('Deleted')"><span>🗑 Delete account</span></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bottomNav" style="display:none">
+    <div class="nav-item active" onclick="goTo('home')"><span class="icon">🏠</span>Home</div>
+    <div class="nav-item" onclick="goTo('send1')"><span class="icon">✈️</span>Send</div>
+    <div class="nav-item" onclick="goTo('history')"><span class="icon">🕒</span>History</div>
+    <div class="nav-item" onclick="goTo('account')"><span class="icon">👤</span>Account</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+  </script>
+
+  <script>
+    window.currentRate = 28.5;
+    let isMznToBif = true;
+    let userName = "User";
+    let clientScreenshotBase64 = null;
+
+    window.showAuthTab = function(n) {
+      document.getElementById("loginForm").style.display = n === 0 ? "block" : "none";
+      document.getElementById("registerForm").style.display = n === 1 ? "block" : "none";
+      document.getElementById("tabLogin").classList.toggle("active", n === 0);
+      document.getElementById("tabSignup").classList.toggle("active", n === 1);
+    };
+
+    window.doLogin = function() {
+      const phone = document.getElementById("loginPhone").value;
+      if (phone) {
+        userName = "User";
+        document.getElementById("greeting").innerText = "Hi, " + userName + " 👋";
+        document.getElementById("accName").innerText = userName;
+        goTo("home");
+        document.getElementById("bottomNav").style.display = "flex";
+      } else alert("Ingiza namba ya simu");
+    };
+
+    window.doRegister = function() {
+      const name = document.getElementById("regName").value || "User";
+      userName = name;
+      document.getElementById("greeting").innerText = "Hi, " + name + " 👋";
+      document.getElementById("accName").innerText = name;
+      document.getElementById("accEmail").innerText = document.getElementById("regEmail").value || "email@example.com";
+      goTo("home");
+      document.getElementById("bottomNav").style.display = "flex";
+    };
+
+    window.goTo = function(page) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(page + "Page").classList.add("active");
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      if (page === "home") document.querySelectorAll(".nav-item")[0].classList.add("active");
+      if (page.startsWith("send")) document.querySelectorAll(".nav-item")[1].classList.add("active");
+      if (page === "history") { document.querySelectorAll(".nav-item")[2].classList.add("active"); loadHistory(); }
+      if (page === "account" || page === "support") document.querySelectorAll(".nav-item")[3].classList.add("active");
+      if (page === "auth") document.getElementById("bottomNav").style.display = "none";
+    };
+
+    window.calculate = function() {
+      const amount = parseFloat(document.getElementById("fromAmount").value) || 0;
+      const result = isMznToBif ? (amount * window.currentRate).toFixed(0) : (amount / window.currentRate).toFixed(2);
+      document.getElementById("toAmount").value = result;
+      document.getElementById("sumFrom").innerText = amount + (isMznToBif ? " MZN" : " BIF");
+      document.getElementById("sumTo").innerText = result + (isMznToBif ? " BIF" : " MZN");
+    };
+
+    window.swapCurrencies = function() {
+      isMznToBif = !isMznToBif;
+      if (isMznToBif) {
+        document.getElementById("fromBadge").innerText = "🇲🇿 MZN";
+        document.getElementById("toBadge").innerText = "🇧🇮 BIF";
+        document.getElementById("flagDirection").innerText = "🇲🇿 → 🇧🇮";
+      } else {
+        document.getElementById("fromBadge").innerText = "🇧🇮 BIF";
+        document.getElementById("toBadge").innerText = "🇲🇿 MZN";
+        document.getElementById("flagDirection").innerText = "🇧🇮 → 🇲🇿";
+      }
+      calculate();
+    };
+
+    // ===== SCREENSHOT - Picha yenyewe (base64) =====
+    window.handleScreenshot = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          clientScreenshotBase64 = event.target.result; // base64 image
+          document.getElementById("uploadBox").classList.add("has-file");
+          document.getElementById("uploadIcon").innerText = "✅";
+          document.getElementById("uploadText").innerText = file.name;
+          const preview = document.getElementById("uploadPreview");
+          preview.src = clientScreenshotBase64;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    window.submitOrder = function() {
+      if (!document.getElementById("confirmCheck").checked) {
+        alert("Tafadhali confirm screenshot ni ya kweli");
+        return;
+      }
+      if (!clientScreenshotBase64) {
+        alert("Tafadhali upload screenshot kwanza");
+        return;
+      }
+
+      const name = document.getElementById("receiverName").value || "Receiver";
+      const phone = document.getElementById("receiverPhone").value || "N/A";
+      const amount = document.getElementById("fromAmount").value || "1000";
+      const toAmount = document.getElementById("toAmount").value || "28500";
+      const refCode = "KP-" + Math.floor(1000 + Math.random() * 9000);
+
+      const orderData = {
+        ref: refCode,
+        from: amount + " MZN",
+        to: toAmount + " BIF",
+        name: name,
+        phone: phone,
+        bankAccountName: document.getElementById("bankAccountName").value || "",
+        bankAccountNumber: document.getElementById("bankAccountNumber").value || "",
+        bankName: document.getElementById("bankName").value || "",
+        bankAddress: document.getElementById("bankAddress").value || "",
+        clientScreenshot: clientScreenshotBase64, // Picha yenyewe
+        status: "Pending",
+        time: new Date().toLocaleString()
+      };
+
+      if (window.push && window.ref && window.db) {
+        window.push(window.ref(window.db, "transactions"), orderData)
+          .then(() => {
+            alert("✅ Order imetumwa!\nRef: " + refCode);
+            clientScreenshotBase64 = null;
+            goTo("history");
+          })
+          .catch(err => alert("Error: " + err.message));
+      } else {
+        alert("Order imetumwa\nRef: " + refCode);
+        goTo("history");
+      }
+    };
+
+    function loadHistory() {
+      if (!window.onValue) return;
+      window.onValue(window.ref(window.db, "transactions"), (snapshot) => {
+        const data = snapshot.val() || {};
+        let html = "";
+        for (let key in data) {
+          const tx = data[key];
+          const status = tx.status || "Pending";
+          let statusClass = "status-badge";
+          if (status === "Completed") statusClass += " status-completed";
+          if (status === "Rejected") statusClass += " status-rejected";
+
+          html += `
+            <div class="history-card">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                  <div style="font-size:13px;color:#888">${tx.ref || key}</div>
+                  <strong>${tx.from} → ${tx.to}</strong>
+                </div>
+                <span class="\( {statusClass}"> \){status}</span>
+              </div>
+              <div class="details-box">
+                <div><strong>Mpokeaji:</strong> ${tx.name || 'N/A'}</div>
+                <div><strong>Number:</strong> ${tx.phone || 'N/A'}</div>
+                ${tx.bankAccountName ? `<div><strong>Account Name:</strong> ${tx.bankAccountName}</div>` : ''}
+                ${tx.bankAccountNumber ? `<div><strong>Account No:</strong> ${tx.bankAccountNumber}</div>` : ''}
+                ${tx.bankName ? `<div><strong>Bank:</strong> ${tx.bankName}</div>` : ''}
+                ${tx.bankAddress ? `<div><strong>Address:</strong> ${tx.bankAddress}</div>` : ''}
+              </div>
+              <div style="font-size:12px;color:#999;margin-top:8px">${tx.time || ''}</div>
+              ${status === "Completed" ? `
+                <div class="congrats-box">
+                  🎉 <strong>Congratulations!</strong><br>
+                  Pesa yako imefika salama.
+                  ${tx.adminProof ? '<br>✅ Proof kutoka Admin imepokelewa' : ''}
+                </div>` : ''}
+              ${status === "Rejected" ? `
+                <div style="margin-top:12px;padding:12px;background:#fee2e2;border-radius:12px;color:#991b1b;font-size:14px;">
+                  ❌ Transaction imekataliwa na Admin
+                </div>` : ''}
+            </div>`;
+        }
+        document.getElementById("historyList").innerHTML = html || "<p style='text-align:center;color:#888;margin-top:40px'>Hakuna transactions bado</p>";
+      });
+    }
+
+    window.changePic = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          document.getElementById("profilePic").innerHTML = `<img src="${ev.target.result}">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    window.openEditProfile = function() {
+      document.getElementById("editName").value = document.getElementById("accName").innerText;
+      document.getElementById("editEmail").value = document.getElementById("accEmail").innerText;
+      document.getElementById("editBox").style.display = "block";
+    };
+
+    window.saveProfile = function() {
+      const name = document.getElementById("editName").value;
+      const email = document.getElementById("editEmail").value;
+      if (name) {
+        document.getElementById("accName").innerText = name;
+        document.getElementById("greeting").innerText = "Hi, " + name + " 👋";
+      }
+      if (email) document.getElementById("accEmail").innerText = email;
+      document.getElementById("editBox").style.display = "none";
+      alert("Profile imesasishwa!");
+    };
+
+    window.changeLang = function() {
+      const langs = ["English","Kiswahili","Français","Kirundi","Kinyarwanda"];
+      const current = document.getElementById("langText").innerText.replace(" →","");
+      const next = langs[(langs.indexOf(current)+1)%langs.length];
+      document.getElementById("langText").innerText = next + " →";
+      alert("Language: " + next);
+    };
+
+    window.showPolicy = function() {
+      alert("Privacy Policy of Koke Pro\n\n- Tunahifadhi data yako salama\n- Hatutoi taarifa kwa wahusika wa tatu\n- Screenshot bandia husababisha kufungwa kwa akaunti");
+    };
+
+    window.sendChat = function() {
+      const msg = document.getElementById("chatMessage").value.trim();
+      if (msg) {
+        const box = document.getElementById("chatBox");
+        box.innerHTML += `<p style="text-align:right;margin:8px 0"><span style="background:#e85d04;color:#fff;padding:8px 12px;border-radius:12px">${msg}</span></p>`;
+        document.getElementById("chatMessage").value = "";
+        box.scrollTop = box.scrollHeight;
+      }
+    };
+
+    window.sendMedia = function(input, type) {
+      if (input.files[0]) {
+        const box = document.getElementById("chatBox");
+        const icons = {image:"📷",audio:"🎤",document:"📄"};
+        box.innerHTML += `<p style="text-align:right;margin:8px 0"><span style="background:#e85d04;color:#fff;padding:8px 12px;border-radius:12px">${icons[type]} ${input.files[0].name}</span></p>`;
+        box.scrollTop = box.scrollHeight;
+      }
+    };
+  </script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.ref = ref;
+    window.onValue = onValue;
+    window.push = push;
+
+    onValue(ref(db, "rate"), (snapshot) => {
+      const rate = snapshot.val();
+      if (rate !== null && rate !== undefined && !isNaN(rate)) {
+        window.currentRate = Number(rate);
+        const el = document.getElementById("liveRateText");
+        if (el) el.innerText = "1 MZN = " + window.currentRate + " BIF";
+        if (typeof window.calculate === "function") window.calculate();
+      }
+    });
+</script>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Koke Pro - Admin</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#0f172a;color:white;min-height:100vh}
+    .hidden{display:none!important}
+    .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f172a,#1e2937)}
+    .login-box{background:#1e2937;padding:36px 28px;border-radius:20px;width:100%;max-width:380px;text-align:center;border:1px solid #334155}
+    .login-box h1{font-size:28px;margin-bottom:6px}
+    .login-box h1 span{color:#f59e0b}
+    .login-box p{color:#94a3b8;margin-bottom:28px;font-size:14px}
+    .login-box input{width:100%;padding:14px 16px;margin:8px 0;border-radius:12px;border:1px solid #334155;background:#0f172a;color:white;font-size:16px}
+    .login-box button{width:100%;padding:15px;margin-top:16px;background:#f59e0b;color:#0f172a;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+    .header{background:#1e2937;padding:15px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155;position:sticky;top:0;z-index:50}
+    .logo{font-size:20px;font-weight:bold}
+    .logo span{color:#f59e0b}
+    .menu-btn{background:none;border:none;color:white;font-size:26px;cursor:pointer}
+    .sidebar{position:fixed;top:0;left:-290px;width:280px;height:100%;background:#1e2937;z-index:100;transition:left .3s ease;padding-top:70px;overflow-y:auto}
+    .sidebar.open{left:0}
+    .sidebar a{display:block;padding:15px 24px;color:#94a3b8;text-decoration:none;font-size:15px;border-left:3px solid transparent}
+    .sidebar a.active{background:#334155;color:#f59e0b;border-left-color:#f59e0b}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;display:none}
+    .overlay.show{display:block}
+    .content{padding:20px 16px 40px}
+    .welcome{color:#94a3b8;margin-bottom:18px;font-size:14px}
+    .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+    .card{background:#1e2937;border-radius:16px;padding:16px;border:1px solid #334155}
+    .card-title{font-size:11px;color:#94a3b8;margin-bottom:8px;display:flex;justify-content:space-between}
+    .card-value{font-size:26px;font-weight:bold}
+    .security-card{background:#1e2937;border:1px solid #ef4444;border-radius:16px;padding:18px;margin-bottom:20px}
+    .security-card h3{color:#ef4444;margin-bottom:8px;font-size:15px}
+    .status-row{display:flex;justify-content:space-between;align-items:center;background:#0f172a;padding:12px 14px;border-radius:12px;margin-top:12px}
+    .status-active{color:#22c55e;font-size:14px}
+    button{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:bold;cursor:pointer}
+    .btn-red{background:#ef4444;color:white}
+    .btn-green{background:#22c55e;color:white}
+    .btn-orange{background:#f59e0b;color:#0f172a}
+    .section{background:#1e2937;border-radius:16px;padding:18px;margin-bottom:16px;border:1px solid #334155}
+    .section h3{margin-bottom:12px;font-size:16px}
+    input{width:100%;padding:13px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:white;margin:8px 0;font-size:15px}
+    .tx-item{background:#0f172a;padding:14px;border-radius:12px;margin-top:12px;border:1px solid #334155}
+    .detail-box{margin-top:10px;padding:12px;background:#1e2937;border-radius:10px;font-size:14px;line-height:1.6}
+    .detail-title{font-weight:bold;color:#f59e0b;margin-bottom:6px}
+    .screenshot-img{max-width:100%;border-radius:10px;margin-top:10px;border:1px solid #334155}
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginPage" class="login-page">
+    <div class="login-box">
+      <h1>Koke <span>Pro</span></h1>
+      <p>Admin Dashboard</p>
+      <input type="text" id="adminUser" placeholder="Email au Phone">
+      <input type="password" id="adminPass" placeholder="Password">
+      <button onclick="adminLogin()">Login as Admin</button>
+      <p style="margin-top:20px;font-size:12px;color:#64748b">Access restricted to authorized Admin only</p>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mainApp" class="hidden">
+    <div class="header">
+      <div class="logo">Koke <span>Pro</span></div>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+    <div class="sidebar" id="sidebar">
+      <a href="#" class="active" id="nav-dashboard" onclick="showSection('dashboard')">📊 Dashboard</a>
+      <a href="#" id="nav-transactions" onclick="showSection('transactions')">↔ Transactions</a>
+      <a href="#" id="nav-rate" onclick="showSection('rate')">↗ Exchange Rate</a>
+      <a href="#" id="nav-chat" onclick="showSection('chat')">💬 Support Chat</a>
+      <a href="#" id="nav-notifications" onclick="showSection('notifications')">🔔 Notifications</a>
+      <a href="#" id="nav-users" onclick="showSection('users')">👥 Users</a>
+      <div style="padding:18px 24px;color:#f59e0b;font-size:13px;border-top:1px solid #334155;margin-top:30px">⚠ Akaunti yako ina hadhi ya admin.</div>
+      <a href="#" onclick="logout()" style="color:#ef4444">↪ Toka</a>
+    </div>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div id="dashboard">
+        <h1 style="font-size:24px;margin-bottom:4px">Dashboard</h1>
+        <p class="welcome">Karibu, Super Admin.</p>
+        <div class="cards">
+          <div class="card"><div class="card-title">TOTAL USERS <span>👤</span></div><div class="card-value" id="totalUsers">0</div></div>
+          <div class="card"><div class="card-title">PENDING TX <span>↔</span></div><div class="card-value" id="pendingCount">0</div></div>
+          <div class="card"><div class="card-title">CHAT MSGS <span>💬</span></div><div class="card-value" id="chatCount">0</div></div>
+          <div class="card"><div class="card-title">RATE (BIF/MZN) <span>↗</span></div><div class="card-value" id="rateDisplay">28.5</div></div>
+        </div>
+        <div class="security-card">
+          <h3>⚠ Security Control</h3>
+          <p style="color:#94a3b8;font-size:13px">Ikiwa application ina shida, unaweza kusimamisha operations mara moja.</p>
+          <div class="status-row">
+            <span class="status-active">🛡 Status: <strong id="appStatus">ACTIVE</strong></span>
+            <button class="btn-red" onclick="emergencyStop()">Emergency Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div id="transactions" class="hidden">
+        <h1 style="font-size:22px;margin-bottom:16px">Transactions</h1>
+        <div class="section">
+          <h3>Pending Transactions</h3>
+          <div id="pendingList"><p style="color:#94a3b8">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- RATE -->
+      <div id="rate" class="hidden">
+        <h1 style="font-size:22px;margin-bottom:16px">Exchange Rate</h1>
+        <div class="section">
+          <h3>Update Rate</h3>
+          <input type="number" id="newRate" value="28.5" step="0.1">
+          <button class="btn-green" style="width:100%;margin-top:10px" onclick="updateRate()">Update Rate</button>
+          <p id="rateStatus" style="margin-top:12px;color:#94a3b8;font-size:14px"></p>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div id="chat" class="hidden">
+        <h1 style="font-size:22px;margin-bottom:16px">Support Chat</h1>
+        <div class="section">
+          <div id="chatBox" style="height:240px;overflow-y:auto;background:#0f172a;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #334155">
+            <p style="color:#94a3b8">Loading...</p>
+          </div>
+          <input type="text" id="chatReply" placeholder="Andika reply...">
+          <button class="btn-green" style="width:100%" onclick="sendReply()">Send Reply</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div id="notifications" class="hidden">
+        <h1 style="font-size:22px;margin-bottom:16px">Notifications</h1>
+        <div class="section">
+          <input type="text" id="notifText" placeholder="Andika notification...">
+          <button class="btn-orange" style="width:100%;margin-top:8px" onclick="sendNotification()">Send to All Users</button>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="users" class="hidden">
+        <h1 style="font-size:22px;margin-bottom:16px">Users</h1>
+        <div class="section">
+          <p style="color:#94a3b8">Total Users: <strong id="userCount2">0</strong></p>
+          <button style="width:100%;background:#334155;color:white;margin-top:12px" onclick="alert('User list...')">View All Users</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function adminLogin() {
+      const user = document.getElementById("adminUser").value.trim();
+      const pass = document.getElementById("adminPass").value.trim();
+      if (user && pass) {
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("mainApp").classList.remove("hidden");
+        loadAllData();
+      } else alert("Ingiza Email/Phone na Password!");
+    }
+
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("show");
+    }
+
+    function showSection(id) {
+      ["dashboard","transactions","rate","chat","notifications","users"].forEach(sec => {
+        document.getElementById(sec).classList.add("hidden");
+        document.getElementById("nav-"+sec).classList.remove("active");
+      });
+      document.getElementById(id).classList.remove("hidden");
+      document.getElementById("nav-"+id).classList.add("active");
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("overlay").classList.remove("show");
+      if (id === "transactions") loadPending();
+      if (id === "chat") loadChat();
+      if (id === "rate") loadRate();
+    }
+
+    function loadAllData() {
+      loadRate();
+      loadPending();
+      loadChat();
+    }
+
+    function loadRate() {
+      onValue(ref(db, "rate"), (snapshot) => {
+        const rate = snapshot.val() || 28.5;
+        document.getElementById("newRate").value = rate;
+        document.getElementById("rateDisplay").innerText = rate;
+        document.getElementById("rateStatus").innerText = "Current: 1 MZN = " + rate + " BIF";
+      });
+    }
+
+    function updateRate() {
+      const rate = Number(document.getElementById("newRate").value);
+      set(ref(db, "rate"), rate)
+        .then(() => alert("✅ Rate imesasishwa: 1 MZN = " + rate + " BIF"))
+        .catch(err => alert("Error: " + err.message));
+    }
+
+    function loadPending() {
+      onValue(ref(db, "transactions"), (snapshot) => {
+        const data = snapshot.val() || {};
+        let html = "";
+        let count = 0;
+
+        for (let key in data) {
+          const tx = data[key];
+          if (tx.status === "Pending") {
+            count++;
+
+            // Mobile Money section
+            let mobileSection = "";
+            if (tx.name || tx.phone) {
+              mobileSection = `
+                <div class="detail-box">
+                  <div class="detail-title">📱 Mobile Money</div>
+                  <div><strong>Mpokeaji:</strong> ${tx.name || 'N/A'}</div>
+                  <div><strong>Number:</strong> ${tx.phone || 'N/A'}</div>
+                </div>`;
+            }
+
+            // Bank Transfer section
+            let bankSection = "";
+            if (tx.bankAccountName || tx.bankAccountNumber || tx.bankName || tx.bankAddress) {
+              bankSection = `
+                <div class="detail-box">
+                  <div class="detail-title">🏦 Bank Transfer</div>
+                  ${tx.bankAccountName ? `<div><strong>Account Name:</strong> ${tx.bankAccountName}</div>` : ''}
+                  ${tx.bankAccountNumber ? `<div><strong>Account No:</strong> ${tx.bankAccountNumber}</div>` : ''}
+                  ${tx.bankName ? `<div><strong>Bank:</strong> ${tx.bankName}</div>` : ''}
+                  ${tx.bankAddress ? `<div><strong>Address:</strong> ${tx.bankAddress}</div>` : ''}
+                </div>`;
+            }
+
+            // Screenshot
+            let screenshotSection = "";
+            if (tx.clientScreenshot && tx.clientScreenshot.startsWith("data:image")) {
+              screenshotSection = `
+                <div class="detail-box">
+                  <div class="detail-title">📷 Client Screenshot</div>
+                  <img src="${tx.clientScreenshot}" class="screenshot-img" alt="Payment Screenshot">
+                </div>`;
+            }
+
+            html += `
+              <div class="tx-item">
+                <strong>${tx.ref || key}</strong><br>
+                <span style="color:#94a3b8;font-size:13px">${tx.from} → ${tx.to}</span>
+                ${mobileSection}
+                ${bankSection}
+                ${screenshotSection}
+                <div style="margin-top:12px;display:flex;gap:8px">
+                  <button class="btn-green" style="flex:1" onclick="confirmTx('${key}')">Confirm</button>
+                  <button class="btn-red" style="flex:1" onclick="rejectTx('${key}')">Reject</button>
+                </div>
+              </div>`;
+          }
+        }
+
+        document.getElementById("pendingList").innerHTML = html || "<p style='color:#94a3b8'>Hakuna pending transactions</p>";
+        document.getElementById("pendingCount").innerText = count;
+      });
+    }
+
+    function confirmTx(key) {
+      update(ref(db, "transactions/" + key), {
+        status: "Completed",
+        adminProof: true
+      }).then(() => alert("✅ Confirmed! Client ataona Congratulations + Proof"));
+    }
+
+    function rejectTx(key) {
+      if (confirm("Una hakika unataka kukataa?")) {
+        update(ref(db, "transactions/" + key), { status: "Rejected" })
+          .then(() => alert("❌ Transaction imekataliwa."));
+      }
+    }
+
+    function loadChat() {
+      onValue(ref(db, "supportChat"), (snapshot) => {
+        const data = snapshot.val() || {};
+        let html = "";
+        let count = 0;
+        for (let key in data) {
+          count++;
+          const msg = data[key];
+          html += `<p style="margin-bottom:8px"><strong style="color:#f59e0b">${msg.from}:</strong> ${msg.text}</p>`;
+        }
+        document.getElementById("chatBox").innerHTML = html || "<p style='color:#94a3b8'>Hakuna messages bado</p>";
+        document.getElementById("chatCount").innerText = count;
+      });
+    }
+
+    function sendReply() {
+      const text = document.getElementById("chatReply").value.trim();
+      if (text) {
+        push(ref(db, "supportChat"), { from: "Admin", text: text, time: Date.now() })
+          .then(() => document.getElementById("chatReply").value = "");
+      }
+    }
+
+    function sendNotification() {
+      const text = document.getElementById("notifText").value.trim();
+      if (text) {
+        push(ref(db, "notifications"), { message: text, time: new Date().toLocaleString() })
+          .then(() => {
+            alert("📢 Notification imetumwa!");
+            document.getElementById("notifText").value = "";
+          });
+      } else alert("Andika ujumbe kwanza!");
+    }
+
+    function emergencyStop() {
+      if (confirm("⚠️ UNA HAKIKA?\n\nHii itasimamisha operations zote.")) {
+        set(ref(db, "appStatus"), "stopped")
+          .then(() => {
+            document.getElementById("appStatus").innerText = "STOPPED";
+            document.getElementById("appStatus").style.color = "#ef4444";
+            alert("🚨 APPLICATION IMESIMAMISHWA!");
+          });
+      }
+    }
+
+    function logout() {
+      if (confirm("Logout Admin?")) location.reload();
+    }
+  </script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+</script>
+<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLRWo2QrDqsjq2kMRCkzI4ZsDHV6AfGhw",
+      authDomain: "koke-pro.firebaseapp.com",
+      databaseURL: "https://koke-pro-default-rtdb.firebaseio.com",
+      projectId: "koke-pro",
+      storageBucket: "koke-pro.firebasestorage.app",
+      messagingSenderId: "95200146022",
+      appId: "1:95200146022:web:c33280448cabaea16f73a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.onValue = onValue;
+    window.push = push;
+    window.update = update;
+</script>
