@@ -415,9 +415,9 @@
         bankAddress: document.getElementById("bankAddress").value || "",
         clientScreenshot: clientScreenshotBase64, // Picha yenyewe
         status: "Pending",
-        time: new Date().toLocaleString()
+        time: new Date().toLocaleString(),
+        userPhone: (JSON.parse(localStorage.getItem("koke_session") || "{}").phone || ""),
       };
-
       if (window.push && window.ref && window.db) {
         window.push(window.ref(window.db, "transactions"), orderData)
           .then(() => {
@@ -438,7 +438,13 @@
         const data = snapshot.val() || {};
         let html = "";
         for (let key in data) {
-          const tx = data[key];
+          const tx = data[key];let myPhone = "";
+      try {
+        const session = JSON.parse(localStorage.getItem("koke_session") || "null");
+        if (session) myPhone = (session.phone || "").replace(/\s+/g, "");
+      } catch (e) {}
+      const txPhone = (tx.userPhone || "").replace(/\s+/g, "");
+      if (myPhone && txPhone && txPhone !== myPhone) continue;
           const status = tx.status || "Pending";
           let statusClass = "status-badge";
           if (status === "Completed") statusClass += " status-completed";
