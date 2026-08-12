@@ -256,6 +256,10 @@
     <div class="menu-item" onclick="showPolicy()"><span>🔒 Privacy Policy</span><span>→</span></div>
     <div class="menu-item" onclick="goTo('auth')" style="color:#e85d04"><span>↪ Sign out</span></div>
     <div class="menu-item" style="color:#ef4444" onclick="if(confirm('Delete account?'))alert('Deleted')"><span>🗑 Delete account</span></div>
+    <div class="menu-item" onclick="doLogout()" style="color:#ef4444;">
+  <span>🚪 Logout</span>
+  <span>→</span>
+</div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -942,6 +946,121 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/fireba
       .then(() => console.log("SW registered"))
       .catch((err) => console.log("SW error", err));
   }
+</script><script>
+window.USERS_KEY = "koke_users";
+window.SESSION_KEY = "koke_session";
+
+function getUsers() {
+  try {
+    return JSON.parse(localStorage.getItem(window.USERS_KEY) || "{}");
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(window.USERS_KEY, JSON.stringify(users));
+}
+
+function isValidPhone(phone) {
+  const p = (phone || "").replace(/\s+/g, "");
+  return /^[0-9+]{8,15}$/.test(p);
+}
+
+window.doRegister = function () {
+  const name = (document.getElementById("regName")?.value || "").trim();
+  const phone = (document.getElementById("regPhone")?.value || "").trim().replace(/\s+/g, "");
+  const email = (document.getElementById("regEmail")?.value || "").trim();
+  const pass = document.getElementById("regPass")?.value || "";
+
+  if (!name || name.length < 2) {
+    alert("Andika jina sahihi");
+    return;
+  }
+  if (!isValidPhone(phone)) {
+    alert("Namba ya simu si sahihi. Tumia namba tu (mfano 257612345678)");
+    return;
+  }
+  if (!pass || pass.length < 4) {
+    alert("Password iwe angalau herufi 4");
+    return;
+  }
+
+  const users = getUsers();
+  if (users[phone]) {
+    alert("Namba hii tayari imesajiliwa. Fanya Login.");
+    return;
+  }
+
+  users[phone] = { name: name, phone: phone, email: email, password: pass };
+  saveUsers(users);
+  localStorage.setItem(window.SESSION_KEY, JSON.stringify({ phone: phone, name: name, email: email }));
+
+  alert("Umefanikiwa kujisajili!");
+  goTo("home");
+  if (document.getElementById("bottomNav")) document.getElementById("bottomNav").style.display = "flex";
+  updateAccountUI();
+};
+
+window.doLogin = function () {
+  const phone = (document.getElementById("loginPhone")?.value || "").trim().replace(/\s+/g, "");
+  const pass = document.getElementById("loginPass")?.value || "";
+
+  if (!isValidPhone(phone)) {
+    alert("Namba ya simu si sahihi");
+    return;
+  }
+  if (!pass) {
+    alert("Andika password");
+    return;
+  }
+
+  const users = getUsers();
+  const user = users[phone];
+
+  if (!user || user.password !== pass) {
+    alert("Namba au password si sahihi");
+    return;
+  }
+
+  localStorage.setItem(window.SESSION_KEY, JSON.stringify({
+    phone: user.phone,
+    name: user.name,
+    email: user.email || ""
+  }));
+
+  goTo("home");
+  if (document.getElementById("bottomNav")) document.getElementById("bottomNav").style.display = "flex";
+  updateAccountUI();
+};
+
+window.doLogout = function () {
+  localStorage.removeItem(window.SESSION_KEY);
+  goTo("auth");
+  if (document.getElementById("bottomNav")) document.getElementById("bottomNav").style.display = "none";
+};
+
+function updateAccountUI() {
+  const session = JSON.parse(localStorage.getItem(window.SESSION_KEY) || "null");
+  if (!session) return;
+  if (document.getElementById("accName")) document.getElementById("accName").innerText = session.name || "";
+  if (document.getElementById("accPhone")) document.getElementById("accPhone").innerText = session.phone || "";
+  if (document.getElementById("accEmail")) document.getElementById("accEmail").innerText = session.email || "";
+}
+
+(function checkSession() {
+  const session = localStorage.getItem(window.SESSION_KEY);
+  if (session) {
+    try {
+      JSON.parse(session);
+      setTimeout(function () {
+        goTo("home");
+        if (document.getElementById("bottomNav")) document.getElementById("bottomNav").style.display = "flex";
+        updateAccountUI();
+      }, 150);
+    } catch (e) {}
+  }
+})();
 </script>
 </body>
 </html>
