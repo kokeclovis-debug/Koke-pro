@@ -444,8 +444,8 @@
         if (session) myPhone = (session.phone || "").replace(/\s+/g, "");
       } catch (e) {}
       const txPhone = (tx.userPhone || "").replace(/\s+/g, "");
-      if (myPhone && txPhone && txPhone !== myPhone) continue;
-          const status = tx.status || "Pending";
+      if (!myPhone || !txPhone || txPhone !== myPhone) continue;
+          const status = tx.status|| "Pending";
           let statusClass = "status-badge";
           if (status === "Completed") statusClass += " status-completed";
           if (status === "Rejected") statusClass += " status-rejected";
