@@ -207,7 +207,7 @@
       <p style="color:#888;font-size:14px">All your transactions</p>
     </div>
     <div id="historyList">
-      <p style="text-align:center;color:#888;margin-top:40px">Hakuna transactions bado</p>
+      <p id="historyLoading" style="text-align:center;padding:40px;color:#666;">Inapakia transactions...</p>
     </div>
   </div>
 
@@ -436,7 +436,8 @@
       if (!window.onValue) return;
       window.onValue(window.ref(window.db, "transactions"), (snapshot) => {
         const data = snapshot.val() || {};
-        let html = "";
+        let html = "";const listEl = document.getElementById("historyList");
+if (listEl) listEl.innerHTML = '<p id="historyLoading" style="text-align:center;padding:40px;color:#666;">Inapakia transactions...</p>';
         for (let key in data) {
           const tx = data[key];let myPhone = "";
       try {
@@ -479,7 +480,7 @@
                   ❌ Transaction imekataliwa na Admin
                 </div>` : ''}
             </div>`;
-        }
+        }if (!html) html = '<p style="text-align:center;padding:40px;color:#888;">Hakuna transactions bado</p>';
         document.getElementById("historyList").innerHTML = html || "<p style='text-align:center;color:#888;margin-top:40px'>Hakuna transactions bado</p>";
       });
     }
