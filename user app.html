@@ -528,7 +528,20 @@ if (listEl) listEl.innerHTML = '<p id="historyLoading" style="text-align:center;
 
     window.sendChat = function() {
       const msg = document.getElementById("chatMessage").value.trim();
-      if (msg) {
+      if (msg) {// Tuma Firebase
+let phone = "";
+try {
+  const session = JSON.parse(localStorage.getItem("koke_session") || "null");
+  if (session) phone = (session.phone || "").replace(/\s+/g, "");
+} catch (e) {}
+if (phone && window.push && window.ref && window.db) {
+  window.push(window.ref(window.db, "support_chats/" + phone), {
+    text: msg,
+    from: "user",
+    type: "text",
+    time: new Date().toLocaleString()
+  });
+}
         const box = document.getElementById("chatBox");
         box.innerHTML += `<p style="text-align:right;margin:8px 0"><span style="background:#e85d04;color:#fff;padding:8px 12px;border-radius:12px">${msg}</span></p>`;
         document.getElementById("chatMessage").value = "";
