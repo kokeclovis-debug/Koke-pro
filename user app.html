@@ -345,6 +345,7 @@
       if (page === "history") { document.querySelectorAll(".nav-item")[2].classList.add("active"); loadHistory(); }
       if (page === "account" || page === "support") document.querySelectorAll(".nav-item")[3].classList.add("active");
       if (page === "auth") document.getElementById("bottomNav").style.display = "none";
+      if (page === "support") { if (typeof loadChat === "function") loadChat(); }
     };
 
     window.calculate = function() {
@@ -555,8 +556,32 @@ if (phone && window.push && window.ref && window.db) {
         const icons = {image:"📷",audio:"🎤",document:"📄"};
         box.innerHTML += `<p style="text-align:right;margin:8px 0"><span style="background:#e85d04;color:#fff;padding:8px 12px;border-radius:12px">${icons[type]} ${input.files[0].name}</span></p>`;
         box.scrollTop = box.scrollHeight;
+      }window.window.sendMedia = function(...) {
+  ... 
+    };window.loadChat = function() {
+  let phone = "";
+  try {
+    const session = JSON.parse(localStorage.getItem("koke_session") || "null");
+    if (session) phone = (session.phone || "").replace(/\s+/g, "");
+  } catch (e) {}
+  if (!phone || !window.onValue) return;
+  const box = document.getElementById("chatBox");
+  if (!box) return;
+  window.onValue(window.ref(window.db, "support_chats/" + phone), function(snap) {
+    const data = snap.val() || {};
+    let html = '<p style="color:#888;text-align:center;">Habari! Unaweza kuuliza chochote hapa.</p>';
+    Object.keys(data).sort().forEach(function(k) {
+      const m = data[k];
+      if (m.from === "user") {
+        html += '<p style="text-align:right;"><span style="background:#e85d04;color:white;padding:8px 14px;border-radius:18px;display:inline-block;margin:4px;">' + (m.text || "") + '</span></p>';
+      } else {
+        html += '<p style="text-align:left;"><span style="background:#eee;padding:8px 14px;border-radius:18px;display:inline-block;margin:4px;">' + (m.text || "") + '</span></p>';
       }
-    };
+    });
+    box.innerHTML = html;
+    box.scrollTop = box.scrollHeight;
+  });
+};
   </script>
 <script>
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
@@ -1001,7 +1026,7 @@ window.doRegister = function () {
     alert("Namba ya simu si sahihi. Tumia namba tu (mfano 257612345678)");
     return;
   }
-  if (!pass || pass.length < 4) {
+  if (!pass || pass.length < 6) {
     alert("Password iwe angalau herufi 4");
     return;
   }
@@ -1017,7 +1042,7 @@ window.doRegister = function () {
   localStorage.setItem(window.SESSION_KEY, JSON.stringify({ phone: phone, name: name, email: email }));
 
   alert("Umefanikiwa kujisajili!");
-  goTo("home");
+  ("home");
   if (document.getElementById("bottomNav")) document.getElementById("bottomNav").style.display = "flex";
   updateAccountUI();
 };
